@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+    <style type="text/css">
+      #progressComp {
+        display: none;
+        height: 26px;
+        text-align: left;
+        margin: 16px;
+        width: 80%;
+      }
+      #progressComp .inlineBlock {
+        display: inline-block;
+        vertical-align: middle;
+      }
+      #progressComp #progressContainer {
+        width: 80%;
+        border: 1px solid #0159e3;
+        border-radius: 10px;
+        height: 10px;
+      }
+      #progressComp #progressShow {
+        background-color: #0159e3;
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+        height: 100%;
+        margin-top: -15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="">
+      <button type="button" id="btn">显示进度条</button>
+    </div>
+    <div id="progressComp" class="inlineBlock">
+      <div id="progressText" class="inlineBlock">
+        <label id="progressTitle" class="inlineBlock">操作名称：</label>
+        <div id="valContainer" class="inlineBlock">
+          <span class="progressVal">0</span>
+          <span class="progressUnit">%</span>
+        </div>
+      </div>
+      <div id="progressContainer" class="inlineBlock">
+        <div id="progressShow" class="inlineBlock"></div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      class Progress {
+        static timer; // 定时器
+        static currentProgress; // 当前进度
+        static closeFn; // 关闭之后需要执行的函数
+        /** 显示进度条
+         * @param {Object} title 操作名称
+         * @param {Object} progress 显示进度
+         * @param {Object} closeFn 关闭后需要执行的函数
+         */
+        static show(title, progress, closeFn = () => {}) {
+          const $progressComp = $('#progressComp'),
+            $progressTitle = $('#progressTitle'),
+            $progressShow = $('#progressShow'),
+            $progressVal = $('#valContainer .progressVal');
+          if (progress === 0) {
+            // 初始化显示进度条
+            if ($progressComp.css('display') !== 'none') {
+              $progressComp.css('display', 'none');
+            }
+            $progressTitle.html(title);
+            $progressVal.html(0);
+            $progressShow.css('width', 0);
+            $progressComp.css('display', 'inline-block');
+
+            // 记录closeFn
+            Progress.closeFn = closeFn;
+            // 监听ESC
+            document.addEventListener('keydown', (e) => {
+              if (e.keyCode === 27) {
+                console.log('esc....');
+                if ($progressComp.css('display') !== 'none') {
+                  // 执行中断机制
+                  Progress.closeFn();
+                }
+              }
+            });
+          } else {
+            // 更新进度条
+            Progress.timer && clearInterval(Progress.timer);
+            let nowVal = Number($progressVal.html());
+            Progress.currentProgress = Math.round(Number(progress) * 100);
+            if (Progress.currentProgress < 0) {
+              Progress.currentProgress = 0;
+            }
+            if (Progress.currentProgress > 100) {
+              Progress.currentProgress = 0;
+            }
+
+            Progress.timer = setInterval(() => {
+              console.log('progress...', nowVal);
+              nowVal++;
+              if (nowVal > Progress.currentProgress) {
+                Progress.timer && clearInterval(Progress.timer);
+                return;
+              }
+              $progressVal.html(nowVal);
+              $progressShow.css('width', nowVal + '%');
+              if (nowVal >= 100) {
+                clearInterval(Progress.timer);
+                $progressComp.css('display', 'none');
+              }
+            }, 17);
+          }
+        }
+      }
+
+      $('#btn').click(() => {
+        const title = 'nameABC';
+        let progress = 0;
+        const timer = setInterval(() => {
+          if (progress >= 1) {
+            clearInterval(timer);
+          }
+          Progress.show(title, progress);
+          progress += 0.25;
+        }, 100);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+	</head>
+	<body>
+        <h2>输入框识别按键，自动填充按键组合</h2>
+		<!-- 禁止用户自定义输入，只能按js指定规则生成 -->
+		<input type="text" id="myInput" value="" readonly="readonly" />
+		<script type="text/javascript">
+			let hotkeyObj = {};
+			$('#myInput').on('keydown',function(e){
+				console.log(e);
+				const $target = $(e.target);
+				const key = e.key === 'Control'?'Ctrl':e.key;
+				const code = e.keyCode;
+				if(code !== 8){
+					hotkeyObj[key] = code;
+					const arr = [];
+					hotkeyObj['Ctrl'] && arr.push('Ctrl');
+					hotkeyObj['Shift'] && arr.push('Shift');
+					hotkeyObj['Alt'] && arr.push('Alt');
+					const specialKeys = ['Ctrl','Shift','Alt'];
+					if(!specialKeys.includes(key)){
+						arr.push(key.toUpperCase());
+					}
+					const hotkey = arr.join('+');
+					$target.val(hotkey);
+					e.preventDefault();
+					return false;
+				}else{
+					// Delete键
+					$target.val('');
+				}
+			}).on('keyup',function(e){
+				console.log(e);
+				if(!(e.ctrlKey || e.altKey || e.shiftKey)){
+					// 按键弹起时，如果ctrl / alt / shift键都没有被按住，则重新开始拼接
+					hotkeyObj = {}
+				}
+			});
+		</script>
+	</body>
+</html>
+
+
