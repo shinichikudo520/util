@@ -1,6 +1,6 @@
 /**
  * 处理并发的promise
- * @param executor 排队处理的异步函数
+ * @param executor 处理的异步函数
  * @param immediately 立即执行
  * @returns
  */
