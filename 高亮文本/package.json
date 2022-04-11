@@ -1,0 +1,17 @@
+{
+    "name": "yes",
+    "version": "1.0.0",
+    "description": "",
+    "main": "hightLightKeyWords.js",
+    "scripts": {
+        "dev": "vite"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "vite": "^2.9.1"
+    },
+    "dependencies": {
+        "jquery": "^3.6.0"
+    }
+}
