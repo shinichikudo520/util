@@ -1,48 +1,172 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<title></title>
-		<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
-	</head>
-	<body>
-        <h2>输入框识别按键，自动填充按键组合</h2>
-		<!-- 禁止用户自定义输入，只能按js指定规则生成 -->
-		<input type="text" id="myInput" value="" readonly="readonly" />
-		<script type="text/javascript">
-			let hotkeyObj = {};
-			$('#myInput').on('keydown',function(e){
-				console.log(e);
-				const $target = $(e.target);
-				const key = e.key === 'Control'?'Ctrl':e.key;
-				const code = e.keyCode;
-				if(code !== 8){
-					hotkeyObj[key] = code;
-					const arr = [];
-					hotkeyObj['Ctrl'] && arr.push('Ctrl');
-					hotkeyObj['Shift'] && arr.push('Shift');
-					hotkeyObj['Alt'] && arr.push('Alt');
-					const specialKeys = ['Ctrl','Shift','Alt'];
-					if(!specialKeys.includes(key)){
-						arr.push(key.toUpperCase());
-					}
-					const hotkey = arr.join('+');
-					$target.val(hotkey);
-					e.preventDefault();
-					return false;
-				}else{
-					// Delete键
-					$target.val('');
-				}
-			}).on('keyup',function(e){
-				console.log(e);
-				if(!(e.ctrlKey || e.altKey || e.shiftKey)){
-					// 按键弹起时，如果ctrl / alt / shift键都没有被按住，则重新开始拼接
-					hotkeyObj = {}
-				}
-			});
-		</script>
-	</body>
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+</head>
+
+<body>
+    <h2>输入框识别按键，自动填充按键组合</h2>
+    <!-- 禁止用户自定义输入，只能按js指定规则生成 -->
+    <input type="text" id="myInput" value="" readonly="readonly" />
+    <input type="text" id="myInput1" value="" readonly="readonly" />
+    <script type="text/javascript">
+        let hotkeyObj = {};
+        $('#myInput').on('keydown', function(e) {
+            console.log(e);
+            const $target = $(e.target);
+            const key = e.key === 'Control' ? 'Ctrl' : e.key;
+            const code = e.keyCode;
+            if (code !== 8) {
+                hotkeyObj[key] = code;
+                const arr = [];
+                hotkeyObj['Ctrl'] && arr.push('Ctrl');
+                hotkeyObj['Shift'] && arr.push('Shift');
+                hotkeyObj['Alt'] && arr.push('Alt');
+                const specialKeys = ['Ctrl', 'Shift', 'Alt'];
+                if (!specialKeys.includes(key)) {
+                    arr.push(key.toUpperCase());
+                }
+                const hotkey = arr.join('+');
+                $target.val(hotkey);
+                e.preventDefault();
+                return false;
+            } else {
+                // Delete键
+                $target.val('');
+            }
+        }).on('keyup', function(e) {
+            console.log(e);
+            if (!(e.ctrlKey || e.altKey || e.shiftKey)) {
+                // 按键弹起时，如果ctrl / alt / shift键都没有被按住，则重新开始拼接
+                hotkeyObj = {}
+            }
+        });
+        const isFireFox = navigator.userAgent.indexOf('Firefox/') > 0;
+        const isMacOS = navigator.userAgent.indexOf('Mac OS') > 0;
+        const keyCodeMap = initMap();
+        $('#myInput1').on('keydown', function(e) {
+            const $target = $(e.target);
+            const code = e.keyCode;
+            e.preventDefault(); // 组织默认行为
+
+            if (code !== 8) {
+                const str = parseKey(e);
+                $target.val(str);
+            } else {
+                $target.val('');
+            }
+        })
+
+
+
+        function initMap() {
+            const map = {
+                8: 'Backspace',
+                9: 'Tab',
+                13: 'Enter',
+                16: 'Shift',
+                17: 'Ctrl',
+                18: 'Alt',
+                27: 'Esc',
+                32: 'Space',
+                33: 'Page Up',
+                34: 'Page Down',
+                35: 'End',
+                36: 'Home',
+                37: 'Left',
+                38: 'Up',
+                39: 'Right',
+                40: 'Down',
+                45: 'Insert',
+                46: 'Delete',
+                91: 'Cmd',
+                96: 'Num0',
+                97: 'Num1',
+                98: 'Num2',
+                99: 'Num3',
+                100: 'Num4',
+                101: 'Num5',
+                102: 'Num6',
+                103: 'Num7',
+                104: 'Num8',
+                105: 'Num9',
+                106: 'Num*',
+                107: 'Num+',
+                109: 'Num-',
+                110: 'Num.',
+                111: 'Num/',
+                187: '=',
+                188: ',',
+                190: '.',
+                191: '/',
+                192: '`',
+                219: '[',
+                220: '\\',
+                221: ']',
+                222: "'",
+            };
+            map[isFireFox ? 59 : 186] = ';';
+            map[isFireFox ? 61 : 187] = '=';
+            map[isFireFox ? 173 : 189] = '-';
+            for (let i = 1; i <= 12; i++) {
+                map[111 + i] = 'F' + i;
+            }
+            if (isMacOS) {
+                if (isFireFox) {
+                    map[224] = 'Cmd';
+                } else {
+                    map[91] = 'Cmd';
+                    map[93] = 'Cmd';
+                }
+                map[8] = 'Delete';
+
+            }
+            return map;
+        }
+
+        function parseKey(ev) {
+            const meta = ev.metaKey,
+                ctrl = ev.ctrlKey,
+                shift = ev.shiftKey,
+                alt = ev.altKey,
+                keyCode = ev.keyCode;
+            let str = '',
+                kStr = keyCodeMap[keyCode];
+
+            if (meta) {
+                str += 'Cmd+';
+            }
+            if (ctrl) {
+                str += 'Ctrl+';
+            }
+            if (shift) {
+                str += 'Shift+';
+            }
+            if (alt) {
+                str += 'Alt+';
+            }
+
+            if ((keyCode >= 48 && keyCode <= 57) || (keyCode >= 65 && keyCode <= 90)) {
+                str += String.fromCharCode(keyCode);
+            } else if (keyCode >= 96 && keyCode <= 105) {
+                // 右侧小键盘上的按键
+                str += kStr;
+            } else if (kStr != 'Cmd' && kStr != 'Ctrl' && kStr != 'Shift' && kStr != 'Alt') {
+                // 不是 meta/alt/ctrl/shift
+                if (Object.hasOwnProperty.call(keyCodeMap, keyCode)) {
+                    str += keyCodeMap[keyCode];
+                }
+            }
+
+            if (str && /[^+]\+$/.test(str)) {
+                str = str.substring(0, str.length - 1);
+            }
+            return str
+        }
+    </script>
+</body>
+
 </html>
-
-
