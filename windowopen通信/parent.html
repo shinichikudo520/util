@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parent</title>
+</head>
+
+<body>
+    <h1>Parent</h1>
+    <button id="clickBtn">打开子页面</button>
+    <script>
+        const clickBtn = document.getElementById("clickBtn");
+        let targetWindow;
+        clickBtn.addEventListener("click", () => {
+            targetWindow = window.open("/child.html", "childPage");
+        });
+        window.addEventListener("message", (e) => {
+            console.log(22222222, e.data);
+            if (targetWindow && e.data.name == "childPage") {
+                targetWindow.postMessage({
+                        cmd: "aaa",
+                        data: "这是父页面传过来的数据",
+                    },
+                    "*"
+                );
+            }
+        });
+    </script>
+</body>
+
+</html>
