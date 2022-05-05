@@ -15,13 +15,18 @@
         const clickBtn = document.getElementById("clickBtn");
         let targetWindow;
         clickBtn.addEventListener("click", () => {
+            // window.open(url,name);
+            // 1. 相同 name 的窗口只能创建一个，如果每一次 open 都要新窗口打开，必须让 name 不相同
+            //  如果相同 name 的窗口已经存在，则 child.html 不会重复加载进入 load 函数
+            //  每次强制打开一个新窗口，又不指定窗口 name 时，使用 _blank
+            // 2. name 不能有空格
             targetWindow = window.open("/child.html", "childPage");
         });
         window.addEventListener("message", (e) => {
             console.log(22222222, e.data);
-            if (targetWindow && e.data.name == "childPage") {
+            if (targetWindow && e.data.cmd == "childPageLoad") {
                 targetWindow.postMessage({
-                        cmd: "aaa",
+                        cmd: e.data.cmd,
                         data: "这是父页面传过来的数据",
                     },
                     "*"
