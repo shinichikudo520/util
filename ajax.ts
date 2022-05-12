@@ -2,12 +2,12 @@
 const pako = null;
 const autoGzipAjaxPostSize = 1e4;
 enum CONTENT_TYPE {
-  JSON = 'application/json',
-  FORM = 'application/x-www-form-unlencoded',
+  JSON = "application/json",
+  FORM = "application/x-www-form-unlencoded",
 }
 
 enum HEADERS_KEY {
-  CONTENT_TYPE = 'content-type',
+  CONTENT_TYPE = "content-type",
 }
 enum NET_STATUS {
   SUCCESS = 200,
@@ -16,7 +16,7 @@ enum NET_STATUS {
 }
 
 export default function ajax(
-  type: 'GET' | 'POST' = 'GET',
+  type: "GET" | "POST" = "GET",
   url: string,
   data: any = {},
   options: any = {}
@@ -45,30 +45,36 @@ export default function ajax(
         if (req.readyState === 4 && req.status === NET_STATUS.SUCCESS) {
           return resolve(JSON.parse(req.responseText));
         } else if (req.status === NET_STATUS.NOT_FOUND) {
-          console.warn('catch ajax error...', req.status);
+          console.warn("catch ajax error...", req.status);
           return resolve({
             success: false,
             code: req.status,
-            message: 'Network Error!',
+            message: "Network Error!",
           });
         } else if (req.status === NET_STATUS.ERROR) {
-          console.warn('catch ajax error...', req.status);
+          console.warn("catch ajax error...", req.status);
           return resolve({
             success: false,
             code: req.status,
-            message: 'Network Error!',
+            message: "Network Error!",
           });
         }
       };
       req.onerror = function (err) {
-        console.warn('catch ajax error...', err);
-        resolve({ success: false, message: 'Network Error!' });
+        console.warn("catch ajax error...", err);
+        resolve({ success: false, message: "Network Error!" });
       };
-      req.send(params);
+      // 如果 send 较大的 Uint8Array 会很卡，改为 Blob 提速
+      if (params instanceof Uint8Array) {
+        const blob = new Blob([params]);
+        req.send(blob);
+      } else {
+        req.send(params);
+      }
       return req;
     } catch (error) {
-      console.warn('catch ajax error...', error);
-      resolve({ success: false, message: 'Network Error!' });
+      console.warn("catch ajax error...", error);
+      resolve({ success: false, message: "Network Error!" });
     }
   });
 }
@@ -83,7 +89,7 @@ function lowerHeaders(headers: { [k: string]: string }) {
 }
 
 function ajaxPreFilter(
-  type: 'GET' | 'POST' = 'GET',
+  type: "GET" | "POST" = "GET",
   url: string,
   data: any = {},
   options: any = {}
@@ -102,24 +108,24 @@ function ajaxPreFilter(
       if (value instanceof Array) {
         value.forEach((val) => {
           const s =
-            encodeURIComponent(`${idx}[]`) + '=' + encodeURIComponent(val);
+            encodeURIComponent(`${idx}[]`) + "=" + encodeURIComponent(val);
           data_array.push(s);
         });
-      } else if (Object.prototype.toString.call(value) === '[object Object]') {
+      } else if (Object.prototype.toString.call(value) === "[object Object]") {
         for (const key in value) {
           const d = value[key];
           const s =
             encodeURIComponent(`${idx}[${key}]`) +
-            '=' +
-            (d ? encodeURIComponent(d) : '');
+            "=" +
+            (d ? encodeURIComponent(d) : "");
           data_array.push(s);
         }
       } else {
-        const s = encodeURIComponent(idx) + '=' + encodeURIComponent(value);
+        const s = encodeURIComponent(idx) + "=" + encodeURIComponent(value);
         data_array.push(s);
       }
     }
-    params = data_array.join('&');
+    params = data_array.join("&");
   }
 
   // 處理url中的{name}
@@ -136,7 +142,7 @@ function ajaxPreFilter(
 
 function handleAjaxHeaders(
   req: XMLHttpRequest,
-  type: 'GET' | 'POST' = 'GET',
+  type: "GET" | "POST" = "GET",
   options: any = {}
 ) {
   const headers = options.headers;
@@ -159,17 +165,17 @@ function handleAjaxHeaders(
 
   // 添加 xsrf 防御支持
   const method = type.toUpperCase();
-  if (method !== 'GET' && method !== 'HEAD') {
+  if (method !== "GET" && method !== "HEAD") {
     const m = /XSRF-TOKEN=(\S+);?/.exec(document.cookie);
     if (m) {
-      req.setRequestHeader('X-XSRF-TOKEN', decodeURIComponent(m[1]));
+      req.setRequestHeader("X-XSRF-TOKEN", decodeURIComponent(m[1]));
     }
   }
 }
 
 function gzipRequest(
   req: XMLHttpRequest,
-  type: 'GET' | 'POST' = 'GET',
+  type: "GET" | "POST" = "GET",
   url: string,
   params: any = {},
   options: any = {}
@@ -178,13 +184,13 @@ function gzipRequest(
   // 本地不压缩
   if (
     type.match(/post/i) &&
-    url[0] == '/' &&
-    typeof params == 'string' &&
-    typeof pako == 'object' &&
+    url[0] == "/" &&
+    typeof params == "string" &&
+    typeof pako == "object" &&
     params.length >= autoGzipAjaxPostSize
   ) {
     params = pako.gzip(params);
-    req.setRequestHeader('Content-Encoding', 'gzip');
+    req.setRequestHeader("Content-Encoding", "gzip");
   }
   return params;
 }
