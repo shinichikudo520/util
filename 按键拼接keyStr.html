@@ -2,52 +2,72 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <title></title>
-    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
 </head>
 
 <body>
     <h2>输入框识别按键，自动填充按键组合</h2>
     <!-- 禁止用户自定义输入，只能按js指定规则生成 -->
-    <input type="text" id="myInput" value="" readonly="readonly" />
+    <h3>方案1</h3>
+    <input type="text" id="myInput" value="" readonly="readonly" /><br />
+    <h3>方案2</h3>
     <input type="text" id="myInput1" value="" readonly="readonly" />
+    <button id="add">Add</button>
+    <button id="search">search</button>
+
+    <div>
+        <ul class="list"></ul>
+    </div>
+
+    <div>匹配结果：<span class="result"></span></div>
     <script type="text/javascript">
+        // 方案一
         let hotkeyObj = {};
-        $('#myInput').on('keydown', function(e) {
-            console.log(e);
-            const $target = $(e.target);
-            const key = e.key === 'Control' ? 'Ctrl' : e.key;
-            const code = e.keyCode;
-            if (code !== 8) {
-                hotkeyObj[key] = code;
-                const arr = [];
-                hotkeyObj['Ctrl'] && arr.push('Ctrl');
-                hotkeyObj['Shift'] && arr.push('Shift');
-                hotkeyObj['Alt'] && arr.push('Alt');
-                const specialKeys = ['Ctrl', 'Shift', 'Alt'];
-                if (!specialKeys.includes(key)) {
-                    arr.push(key.toUpperCase());
+        $("#myInput")
+            .on("keydown", function(e) {
+                console.log(e);
+                const $target = $(e.target);
+                const key = e.key === "Control" ? "Ctrl" : e.key;
+                const code = e.keyCode;
+                if (code !== 8) {
+                    hotkeyObj[key] = code;
+                    const arr = [];
+                    hotkeyObj["Ctrl"] && arr.push("Ctrl");
+                    hotkeyObj["Shift"] && arr.push("Shift");
+                    hotkeyObj["Alt"] && arr.push("Alt");
+                    const specialKeys = ["Ctrl", "Shift", "Alt"];
+                    if (!specialKeys.includes(key)) {
+                        arr.push(key.toUpperCase());
+                    }
+                    const hotkey = arr.join("+");
+                    $target.val(hotkey);
+                    e.preventDefault();
+                    return false;
+                } else {
+                    // Delete键
+                    $target.val("");
                 }
-                const hotkey = arr.join('+');
-                $target.val(hotkey);
-                e.preventDefault();
-                return false;
-            } else {
-                // Delete键
-                $target.val('');
-            }
-        }).on('keyup', function(e) {
-            console.log(e);
-            if (!(e.ctrlKey || e.altKey || e.shiftKey)) {
-                // 按键弹起时，如果ctrl / alt / shift键都没有被按住，则重新开始拼接
-                hotkeyObj = {}
-            }
-        });
-        const isFireFox = navigator.userAgent.indexOf('Firefox/') > 0;
-        const isMacOS = navigator.userAgent.indexOf('Mac OS') > 0;
+            })
+            .on("keyup", function(e) {
+                console.log(e);
+                if (!(e.ctrlKey || e.altKey || e.shiftKey)) {
+                    // 按键弹起时，如果ctrl / alt / shift键都没有被按住，则重新开始拼接
+                    hotkeyObj = {};
+                }
+            });
+        // 方案二：更优
+        const isFireFox = navigator.userAgent.indexOf("Firefox/") > 0;
+        const isMacOS = navigator.userAgent.indexOf("Mac OS") > 0;
         const keyCodeMap = initMap();
-        $('#myInput1').on('keydown', function(e) {
+
+        function init() {
+            const hotkeys = getParseHotkeys();
+            updateList(hotkeys);
+        }
+        init();
+        $("#myInput1").on("keydown", function(e) {
             const $target = $(e.target);
             const code = e.keyCode;
             e.preventDefault(); // 组织默认行为
@@ -56,73 +76,124 @@
                 const str = parseKey(e);
                 $target.val(str);
             } else {
-                $target.val('');
+                $target.val("");
             }
-        })
+        });
+        $("#add").on("click", function(e) {
+            const hotkey = $("#myInput1").val();
+            setHotkeys(hotkey);
+            updateList(getParseHotkeys());
+            $("#myInput1").val("");
+        });
+        $("#search").on("click", function(e) {
+            // 能将 mac 和 Windows 系统的快捷键相互转化匹配上
+            // 1. 需要在拼接按键信息时，区分系统 ---- parseKey
+            // 2. 匹配数据时，需要将缓存的数据转义后再进行匹配 ------ fixCtrl
+            const hotkey = $("#myInput1").val();
+            const hotkeys = getParseHotkeys();
+            let result = "";
+            hotkeys.forEach((key, i) => {
+                if (key === hotkey) {
+                    result = hotkey;
+                }
+            });
+            $(".result").html(result || "无");
+            $("#myInput1").val("");
+        });
 
+        function getHotkeys() {
+            let hotkeys = localStorage.getItem("hotkeys");
+            return hotkeys ? JSON.parse(hotkeys) : [];
+        }
+        // 得到根据不同系统转义后的缓存的数据
+        // 1. search 匹配数据的时候用
+        // 2. updateList 显示数据的时候用
+        function getParseHotkeys() {
+            const hotkeys = getHotkeys();
+            hotkeys.forEach((key, i) => {
+                hotkeys[i] = fixCtrl(key);
+            });
+            return hotkeys;
+        }
 
+        function setHotkeys(keyStr) {
+            let hotkeys = getHotkeys();
+            hotkeys.push(keyStr);
+            hotkeys = [...new Set(hotkeys)];
+            console.log("hotkeys...", hotkeys);
+            localStorage.setItem("hotkeys", JSON.stringify(hotkeys));
+            return hotkeys;
+        }
+
+        function updateList(hotkeys) {
+            const $list = $(".list");
+            $list.html("");
+            hotkeys.forEach((hotkey) => {
+                const li = `<li>${hotkey}</li>`;
+                $list.append(li);
+            });
+        }
 
         function initMap() {
             const map = {
-                8: 'Backspace',
-                9: 'Tab',
-                13: 'Enter',
-                16: 'Shift',
-                17: 'Ctrl',
-                18: 'Alt',
-                27: 'Esc',
-                32: 'Space',
-                33: 'Page Up',
-                34: 'Page Down',
-                35: 'End',
-                36: 'Home',
-                37: 'Left',
-                38: 'Up',
-                39: 'Right',
-                40: 'Down',
-                45: 'Insert',
-                46: 'Delete',
-                91: 'Cmd',
-                96: 'Num0',
-                97: 'Num1',
-                98: 'Num2',
-                99: 'Num3',
-                100: 'Num4',
-                101: 'Num5',
-                102: 'Num6',
-                103: 'Num7',
-                104: 'Num8',
-                105: 'Num9',
-                106: 'Num*',
-                107: 'Num+',
-                109: 'Num-',
-                110: 'Num.',
-                111: 'Num/',
-                187: '=',
-                188: ',',
-                190: '.',
-                191: '/',
-                192: '`',
-                219: '[',
-                220: '\\',
-                221: ']',
+                8: "Backspace",
+                9: "Tab",
+                13: "Enter",
+                16: "Shift",
+                17: isMacOS ? "Control" : "Ctrl",
+                18: "Alt",
+                27: "Esc",
+                32: "Space",
+                33: "Page Up",
+                34: "Page Down",
+                35: "End",
+                36: "Home",
+                37: "Left",
+                38: "Up",
+                39: "Right",
+                40: "Down",
+                45: "Insert",
+                46: "Delete",
+                91: "Cmd",
+                96: "Num0",
+                97: "Num1",
+                98: "Num2",
+                99: "Num3",
+                100: "Num4",
+                101: "Num5",
+                102: "Num6",
+                103: "Num7",
+                104: "Num8",
+                105: "Num9",
+                106: "Num*",
+                107: "Num+",
+                109: "Num-",
+                110: "Num.",
+                111: "Num/",
+                187: "=",
+                188: ",",
+                190: ".",
+                191: "/",
+                192: "`",
+                219: "[",
+                220: "\\",
+                221: "]",
                 222: "'",
             };
-            map[isFireFox ? 59 : 186] = ';';
-            map[isFireFox ? 61 : 187] = '=';
-            map[isFireFox ? 173 : 189] = '-';
+            map[isFireFox ? 59 : 186] = ";";
+            map[isFireFox ? 61 : 187] = "=";
+            map[isFireFox ? 173 : 189] = "-";
             for (let i = 1; i <= 12; i++) {
-                map[111 + i] = 'F' + i;
+                map[111 + i] = "F" + i;
             }
             if (isMacOS) {
                 if (isFireFox) {
-                    map[224] = 'Cmd';
+                    map[224] = "Cmd";
                 } else {
-                    map[91] = 'Cmd';
-                    map[93] = 'Cmd';
+                    map[91] = "Cmd";
+                    map[93] = "Cmd";
                 }
-                map[8] = 'Delete';
-
+                map[8] = "Delete";
             }
             return map;
         }
@@ -133,28 +204,37 @@
                 shift = ev.shiftKey,
                 alt = ev.altKey,
                 keyCode = ev.keyCode;
-            let str = '',
+            let str = "",
                 kStr = keyCodeMap[keyCode];
 
-            if (meta) {
-                str += 'Cmd+';
+            if (isMacOS && meta) {
+                str += "Cmd+";
             }
             if (ctrl) {
-                str += 'Ctrl+';
+                str += isMacOS ? "Control+" : "Ctrl+";
             }
             if (shift) {
-                str += 'Shift+';
+                str += "Shift+";
             }
             if (alt) {
-                str += 'Alt+';
+                str += "Alt+";
             }
 
-            if ((keyCode >= 48 && keyCode <= 57) || (keyCode >= 65 && keyCode <= 90)) {
+            if (
+                (keyCode >= 48 && keyCode <= 57) ||
+                (keyCode >= 65 && keyCode <= 90)
+            ) {
                 str += String.fromCharCode(keyCode);
             } else if (keyCode >= 96 && keyCode <= 105) {
                 // 右侧小键盘上的按键
                 str += kStr;
-            } else if (kStr != 'Cmd' && kStr != 'Ctrl' && kStr != 'Shift' && kStr != 'Alt') {
+            } else if (
+                kStr != "Cmd" &&
+                kStr != "Ctrl" &&
+                kStr != "Control" &&
+                kStr != "Shift" &&
+                kStr != "Alt"
+            ) {
                 // 不是 meta/alt/ctrl/shift
                 if (Object.hasOwnProperty.call(keyCodeMap, keyCode)) {
                     str += keyCodeMap[keyCode];
@@ -164,7 +244,26 @@
             if (str && /[^+]\+$/.test(str)) {
                 str = str.substring(0, str.length - 1);
             }
-            return str
+            return str;
+        }
+        // 根据不同系统处理  Ctrl/Control/Command，使 MAC 和 Windows 设置的快捷键能够同样
+        function fixCtrl(keyStr) {
+            if (typeof keyStr === "string") {
+                if (isMacOS) {
+                    // mac 系统
+                    // 将 Windows 系统设置的的 Ctrl => cmd，所以在 Windows 系统设置 Ctrl+S, 在 mac 系统按 Cmd+S 也能使用
+                    // mac 系统的 Control 键记录成 Control, Command 键记录成 Cmd
+                    keyStr = keyStr.replace(/Ctrl/g, "Cmd");
+                } else {
+                    // Windows 系统
+                    // 将 mac 系统设置的 Control => Ctrl, Cmd => Ctrl, Control+Cmd => Ctrl, 所以在 mac 系统设置 Control+S/Cmd+S, 在 mac 系统按 Ctrl+S 也能使用
+                    // Windows 系统的 Ctrl 键记录成 Ctrl
+                    keyStr = keyStr.replace(/Control/g, "Ctrl");
+                    keyStr = keyStr.replace(/Cmd/g, "Ctrl");
+                    keyStr = keyStr.replace(/Control\+Cmd/g, "Ctrl");
+                }
+            }
+            return keyStr;
         }
     </script>
 </body>
