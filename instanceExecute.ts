@@ -26,6 +26,7 @@ export function instanceExecute(
   }
 }
 /**
+ * !!! 这个方法有问题
  * 处理并发的promise
  *  同时进来 1、2、3、4、5、6次，则执行第 1 次，且执行最后进入的第 6 次，
  * @param executor 处理的异步函数
