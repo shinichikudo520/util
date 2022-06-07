@@ -26,46 +26,42 @@ export function instanceExecute(
   }
 }
 /**
- * !!! 这个方法有问题
+ *
  * 处理并发的promise
  *  同时进来 1、2、3、4、5、6次，则执行第 1 次，且执行最后进入的第 6 次，
  * @param executor 处理的异步函数
  * @returns 返回 executor 的结果（promise）
  */
 export function instanceExecute1(executor: (...args) => Promise<any>) {
-  let ticket = 0;
-  let cur = 0;
-  let _args: any[] | undefined;
-  let promise: Promise<any> | undefined;
-  let _resolve: (result?: any) => void, _reject: (err?: any) => void;
-  const loop = async () => {
-    cur = ticket;
-    promise = undefined;
-    const res = _resolve;
-    const rej = _reject;
-    try {
-      const ret = await executor(..._args);
-      res(ret);
-    } catch (error) {
-      rej(error);
-    }
-    if (cur < ticket) {
-      Promise.resolve().then(loop);
-    }
-  };
-  return (...args) => {
-    if (cur === ticket) {
-      Promise.resolve().then(loop);
-    }
-    ++ticket;
+  let curPromise: Promise<void> | null = null;
+  let nextPromise: Promise<void> | null = null;
+  let _args: any;
+  return (...args: any[]) => {
     _args = args;
-    if (!promise) {
-      promise = new Promise<any>((resolve, reject) => {
-        _resolve = resolve;
-        _reject = reject;
-      });
+    if (curPromise) {
+      if (!nextPromise) {
+        nextPromise = (async () => {
+          try {
+            await curPromise;
+            curPromise = nextPromise;
+            nextPromise = null;
+            await executor(..._args);
+          } finally {
+            curPromise = null;
+          }
+        })();
+      }
+      return nextPromise;
+    } else {
+      curPromise = (async () => {
+        try {
+          await executor(..._args);
+        } finally {
+          curPromise = null;
+        }
+      })();
+      return curPromise;
     }
-    return promise;
   };
 }
 
