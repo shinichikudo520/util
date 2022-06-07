@@ -62,6 +62,10 @@
             console.log(res);
         })
 
+        // 输出结果是 0  2  5
+        // 0是第一次进入，输出
+        // 1,2 同步进入 nextPromise 等待, 第3s时, 0 异步执行结束, 开始执行队列的 1,2 nextPromise 为 null
+        // 同时第3s, 4,5 进入 nextPromise 等待
         for (let i = 0; i < 6; i++) {
             if (i < 3) {
                 test(i)
