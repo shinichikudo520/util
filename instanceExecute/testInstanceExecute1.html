@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        /**
+         *
+         * 处理并发的promise
+         *  同时进来 1、2、3、4、5、6次，则执行第 1 次，且执行最后进入的第 6 次，
+         * @param executor 处理的异步函数
+         * @returns 返回 executor 的结果（promise）
+         */
+        function instanceExecute1(executor = () => {}) {
+            let curPromise = null;
+            let nextPromise = null;
+            let _args;
+            return (...args) => {
+                _args = args;
+                if (curPromise) {
+                    if (!nextPromise) {
+                        nextPromise = (async() => {
+                            try {
+                                await curPromise;
+                                curPromise = nextPromise;
+                                nextPromise = null;
+                                await executor(..._args);
+                            } finally {
+                                curPromise = null;
+                            }
+                        })();
+                    }
+                    return nextPromise;
+                } else {
+                    curPromise = (async() => {
+                        try {
+                            await executor(..._args);
+                        } finally {
+                            curPromise = null;
+                        }
+                    })();
+                    return curPromise;
+                }
+            };
+        }
+
+        function asyncFn(arg) {
+            return new Promise(resove => {
+                setTimeout(() => {
+                    resove(arg)
+                }, 3000)
+            })
+        }
+        const test = instanceExecute1(async(cn) => {
+            const res = await asyncFn(cn)
+            console.log(res);
+        })
+
+        for (let i = 0; i < 6; i++) {
+            if (i < 3) {
+                test(i)
+            } else {
+                setTimeout(() => {
+                    test(i)
+                }, 3000)
+            }
+
+        }
+    </script>
+</body>
+
+</html>
+
+</html>
