@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        function getSize(str) {
+            const bytes = unescape(encodeURIComponent(str)).length; // 获取字节
+            const bytes1 = new Blob([str]).size; // 获取字节
+            console.log("字节大小...", bytes, bytes1);
+            const size = convert("B", bytes);
+            return `${str} 字符大小：${size}`;
+        }
+
+        function convert(unit, bytes) {
+            const units = ["B", "KB", "MB", "GB", "TB"];
+            const i = units.indexOf(unit);
+            const size = (bytes / pow1024(i)).toFixed(2); // 字节转其他单位
+            return `${size} ${units[i]}`;
+        }
+
+        // 求次幂
+        function pow1024(num) {
+            return Math.pow(1024, num);
+        }
+
+        console.log(getSize("aaa"));
+        console.log(getSize(123));
+        console.log(getSize("蓝忘机"));
+
+        // 参考文档：
+        // 1. https://segmentfault.com/q/1010000007847667
+        // 2. https://blog.csdn.net/qq_23994787/article/details/86609659
+        // 3. https://aixiaodou.blog.csdn.net/article/details/108885082?spm=1001.2101.3001.6650.1&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-1-108885082-blog-106854329.pc_relevant_downloadblacklistv1&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-1-108885082-blog-106854329.pc_relevant_downloadblacklistv1&utm_relevant_index=1
+    </script>
+</body>
+
+</html>
