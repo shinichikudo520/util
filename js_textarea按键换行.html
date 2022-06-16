@@ -20,11 +20,16 @@
     <div id="showText"></div>
     <script>
         const ENTER_CODE = 13;
+        const ALT_CODE = 18;
         const $text = $("#text");
         const $showDiv = $("#showText");
+        $text.on("blur", function(e) {
+            console.log("blur...");
+        });
         $text.on("keydown", function(e) {
+            console.log("keydown...");
             const $this = $(e.target);
-            // 阻止 enter 键的默认行为, 显示文本框的结果
+            // 1. 阻止 enter 键的换行默认行为, 显示文本框的结果
             if (
                 e.keyCode === ENTER_CODE &&
                 !e.ctrlKey &&
@@ -40,7 +45,13 @@
             }
         });
         $text.on("keyup", function(e) {
-            // 文本输入框, Ctrl/Shift/Alt + Enter 换行
+            console.log("keyup...");
+            if (e.keyCode === ALT_CODE) {
+                // 3. alt 键会触发 textarea 的失焦, 阻止这个默认行为
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            // 2. 文本输入框, Ctrl/Shift/Alt + Enter 换行
             const $this = $(e.target);
             if (e.keyCode === ENTER_CODE && (e.ctrlKey || e.altKey)) {
                 e.stopPropagation();
