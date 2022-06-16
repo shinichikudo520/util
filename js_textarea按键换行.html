@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <title>Document</title>
+    <style>
+        #showText {
+            white-space: pre;
+        }
+    </style>
+</head>
+
+<body>
+    <textarea name="" id="text" cols="30" rows="10"></textarea>
+    <h3>文本框输入：</h3>
+    <div id="showText"></div>
+    <script>
+        const ENTER_CODE = 13;
+        const $text = $("#text");
+        const $showDiv = $("#showText");
+        $text.on("keydown", function(e) {
+            const $this = $(e.target);
+            // 阻止 enter 键的默认行为, 显示文本框的结果
+            if (
+                e.keyCode === ENTER_CODE &&
+                !e.ctrlKey &&
+                !e.shiftKey &&
+                !e.altKey
+            ) {
+                e.stopPropagation();
+                e.preventDefault();
+                $this.blur();
+                $showDiv.html($this.val());
+                e.returnValue = false;
+                return false;
+            }
+        });
+        $text.on("keyup", function(e) {
+            // 文本输入框, Ctrl/Shift/Alt + Enter 换行
+            const $this = $(e.target);
+            if (e.keyCode === ENTER_CODE && (e.ctrlKey || e.altKey)) {
+                e.stopPropagation();
+                const val = $this.val();
+                const curTarget = e.currentTarget;
+                const start = curTarget.selectionStart;
+                const end = curTarget.selectionEnd;
+                const value = val.substring(0, start) + "\n" + val.substring(end);
+                $this.val(value);
+                curTarget.selectionStart = start + 1;
+                curTarget.selectionEnd = start + 1;
+            }
+        });
+    </script>
+</body>
+
+</html>
