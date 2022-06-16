@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+        .content {
+            width: 300px;
+            border: 1px solid gray;
+            word-wrap: break-word;
+        }
+        
+        .normal {
+            white-space: normal;
+        }
+        
+        .pre {
+            white-space: pre;
+        }
+        
+        .nowrap {
+            white-space: nowrap;
+        }
+        
+        .preWrap {
+            white-space: pre-wrap;
+        }
+        
+        .preLine {
+            white-space: pre-line;
+        }
+        
+        .inherit {
+            white-space: inherit;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>white-space属性定义空白</h2>
+    <div class="line">
+        <h2 class="type">normal</h2>
+        <div class="explain">
+            <ul>
+                <li>
+                    1. 忽略多余的空白, 多个空格在一起或者换行符(回车键)， 浏览器会看作一个空格处理
+                </li>
+                <li>
+                    2. 不会影响自动换行, 当元素内容过长, 在一行显示不完, 会从下一行开始
+                </li>
+            </ul>
+        </div>
+        <div class="content normal">
+            aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbb aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        </div>
+    </div>
+
+    <div class="line">
+        <h2 class="type">pre</h2>
+        <div class="explain">
+            <ul>
+                <li>1. 保留空白或者换行符, 输入几个空格就是几个空格, 原样输出</li>
+                <li>
+                    2. 会影响自动换行, 当元素内容过长, 不会从下一行开始, 会冲出元素的边界显示
+                </li>
+            </ul>
+        </div>
+        <div class="content pre">
+            aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbb aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        </div>
+    </div>
+
+    <div class="line">
+        <h2 class="type">nowrap</h2>
+        <div class="explain">
+            <ul>
+                <li>
+                    1. 忽略多余的空白, 多个空格在一起或者换行符(回车键)， 浏览器会看作一个空格处理
+                </li>
+                <li>
+                    2. 会影响自动换行, 当元素内容过长, 不会从下一行开始, 会冲出元素的边界显示, 只有遇到
+                    <\/br>标签才会换行
+                </li>
+            </ul>
+        </div>
+        <div class="content nowrap">
+            aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbb aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        </div>
+    </div>
+
+    <div class="line">
+        <h2 class="type">pre-wrap</h2>
+        <div class="explain">
+            <ul>
+                <li>
+                    1. 与 nowrap 完全相反, 保留空白或者换行符, 输入几个空格就是几个空格, 原样输出
+                </li>
+                <li>
+                    2. 不会影响自动换行, 当元素内容过长, 在一行显示不完, 会从下一行开始
+                </li>
+            </ul>
+        </div>
+        <div class="content preWrap">
+            aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbb aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        </div>
+    </div>
+
+    <div class="line">
+        <h2 class="type">pre-line</h2>
+        <div class="explain">
+            <ul>
+                <li>
+                    1. 合并空白序列, 保留换行符。 就是多个空格会作为一个空格处理, 但是换行符会将内容从下一行开始
+                </li>
+                <li>
+                    2. 不会影响自动换行, 当元素内容过长, 在一行显示不完, 会从下一行开始
+                </li>
+            </ul>
+        </div>
+        <div class="content preLine">
+            aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbb aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        </div>
+    </div>
+
+    <div class="line">
+        <h2 class="type">inherit</h2>
+        <div class="explain">
+            <ul>
+                <li>1. 从父元素继承 white-space 属性</li>
+            </ul>
+        </div>
+        <div class="nowrap">
+            <div class="content inherit">
+                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbb aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
