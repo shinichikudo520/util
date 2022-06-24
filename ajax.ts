@@ -16,7 +16,7 @@ enum NET_STATUS {
 }
 
 export default function ajax(
-  type: "GET" | "POST" = "GET",
+  type: "GET" | "POST" | "DELETE" = "GET",
   url: string,
   data: any = {},
   options: any = {}
@@ -89,7 +89,7 @@ function lowerHeaders(headers: { [k: string]: string }) {
 }
 
 function ajaxPreFilter(
-  type: "GET" | "POST" = "GET",
+  type: "GET" | "POST" | "DELETE" = "GET",
   url: string,
   data: any = {},
   options: any = {}
@@ -142,7 +142,7 @@ function ajaxPreFilter(
 
 function handleAjaxHeaders(
   req: XMLHttpRequest,
-  type: "GET" | "POST" = "GET",
+  type: "GET" | "POST" | "DELETE" = "GET",
   options: any = {}
 ) {
   const headers = options.headers;
@@ -175,7 +175,7 @@ function handleAjaxHeaders(
 
 function gzipRequest(
   req: XMLHttpRequest,
-  type: "GET" | "POST" = "GET",
+  type: "GET" | "POST" | "DELETE" = "GET",
   url: string,
   params: any = {},
   options: any = {}
