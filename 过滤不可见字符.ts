@@ -1,3 +1,7 @@
+/**
+ * 参考资料: https://blog.csdn.net/Charonmomo/article/details/130862041
+ */
+
 /** 正则过滤: 不可见字符范围正则表达式 [\x00-\x1F\x7F] */
 function filterInvisibleChar(str: string) {
   return str.replace(/[\x00-\x1F\x7F]+/g, ``);
