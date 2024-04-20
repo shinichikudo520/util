@@ -55,3 +55,25 @@ async function splitBulk1(
     await callback(arr);
   }
 }
+/**
+ * 批量数据分割操作
+ * @param num 分割次数, 将数据分割成*次操作
+ * @param datas 需要批量操作的数据
+ * @param callback 对分割后的数据进行处理的回调函数
+ */
+export async function splitBulk2<T>(
+  num: number,
+  datas: Array<T>,
+  callback: (subDatas: Array<T>) => void
+) {
+  const len = datas.length;
+  const limit = Math.ceil(len / num);
+  for (let i = 0; i < len; i += limit) {
+    const max = Math.min(len, i + limit);
+    if (callback instanceof Promise) {
+      await callback(datas.slice(i, max));
+    } else {
+      callback(datas.slice(i, max));
+    }
+  }
+}
