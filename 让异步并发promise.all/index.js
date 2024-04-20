@@ -34,43 +34,47 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 var _this = this;
 (function () { return __awaiter(_this, void 0, void 0, function () {
-    function batchSync(datas) {
+    /**
+     * 让指定数量的异步同时进行, 并发处理, 提高批量异步的需求的速度
+     *    比一个个异步请求, await, 速度约提高 2-3 倍
+     * @param datas
+     * @returns
+     */
+    function concurrent(datas) {
         return __awaiter(this, void 0, void 0, function () {
-            var result;
+            var tasks, temp;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        result = [];
+                        tasks = [];
                         return [4 /*yield*/, splitBulk(LIMIT, datas, function (arr) { return __awaiter(_this, void 0, void 0, function () {
-                                var tasks, _loop_2, i, temp;
+                                var p;
                                 return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            tasks = [];
-                                            _loop_2 = function (i) {
-                                                var item = arr[i];
-                                                var p = new Promise(function (resolve) {
-                                                    resolve(item);
-                                                });
-                                                tasks.push(p);
-                                            };
-                                            for (i = 0; i < arr.length; i++) {
-                                                _loop_2(i);
-                                            }
-                                            return [4 /*yield*/, Promise.all(tasks)];
-                                        case 1:
-                                            temp = _a.sent();
-                                            result = result.concat(temp);
-                                            return [2 /*return*/];
-                                    }
+                                    p = new Promise(function (resolve) {
+                                        resolve(arr);
+                                    });
+                                    tasks.push(p);
+                                    return [2 /*return*/];
                                 });
                             }); })];
                     case 1:
                         _a.sent();
-                        return [2 /*return*/, result];
+                        return [4 /*yield*/, Promise.all(tasks)];
+                    case 2:
+                        temp = _a.sent();
+                        return [2 /*return*/, temp];
                 }
             });
         });
@@ -99,7 +103,90 @@ var _this = this;
             });
         });
     }
-    var tasks, _loop_1, i, result, LIMIT, _a, _b, _c;
+    function concurrent1(limits, datas, split, callback) {
+        return __awaiter(this, void 0, void 0, function () {
+            var tasks, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        tasks = [];
+                        return [4 /*yield*/, split.apply(this, __spreadArray(__spreadArray([], limits, true), [
+                                datas,
+                                function (subDatas) { return tasks.push(callback(subDatas)); },
+                            ], false))];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, Promise.all(tasks)];
+                    case 2:
+                        result = _a.sent();
+                        return [2 /*return*/, result];
+                }
+            });
+        });
+    }
+    function concurrent2(limit) {
+        var _this = this;
+        var queue = [];
+        var activeCount = 0;
+        var next = function () {
+            activeCount--;
+            if (queue.length > 0) {
+                queue.shift()();
+            }
+        };
+        var run = function (fn, resolve) {
+            var args = [];
+            for (var _i = 2; _i < arguments.length; _i++) {
+                args[_i - 2] = arguments[_i];
+            }
+            return __awaiter(_this, void 0, void 0, function () {
+                var result, res, error_1;
+                var _this = this;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            activeCount++;
+                            result = (function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+                                return [2 /*return*/, fn.apply(void 0, args)];
+                            }); }); })();
+                            _a.label = 1;
+                        case 1:
+                            _a.trys.push([1, 3, , 4]);
+                            return [4 /*yield*/, result];
+                        case 2:
+                            res = _a.sent();
+                            resolve(res);
+                            return [3 /*break*/, 4];
+                        case 3:
+                            error_1 = _a.sent();
+                            return [3 /*break*/, 4];
+                        case 4:
+                            next();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        var enqueue = function (fn, resolve) {
+            var args = [];
+            for (var _i = 2; _i < arguments.length; _i++) {
+                args[_i - 2] = arguments[_i];
+            }
+            queue.push(run.bind.apply(run, __spreadArray([null, fn, resolve], args, false)));
+            if (activeCount < limit && queue.length > 0) {
+                queue.shift()();
+            }
+        };
+        var generator = function (fn) {
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
+            }
+            return new Promise(function (resolve) { return enqueue.apply(void 0, __spreadArray([fn, resolve], args, false)); });
+        };
+        return generator;
+    }
+    var tasks, _loop_1, i, result, arr, LIMIT, _a, _b, _c, temp, promises, generator, temp1;
     return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
@@ -117,12 +204,42 @@ var _this = this;
             case 1:
                 result = _d.sent();
                 console.log(result);
+                arr = [
+                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                ];
                 LIMIT = 10;
+                // [test concurrent]
                 _b = (_a = console).log;
-                _c = ["batchSync"];
-                return [4 /*yield*/, batchSync([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])];
+                _c = ["concurrent"];
+                return [4 /*yield*/, concurrent(arr)];
             case 2:
-                _b.apply(_a, _c.concat([_d.sent()]));
+                // [test concurrent]
+                _b.apply(_a, _c.concat([_d.sent()])); // [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]]
+                return [4 /*yield*/, concurrent1.call(this, [LIMIT], arr, splitBulk, function (subDatas) {
+                        var p = new Promise(function (resolve) {
+                            resolve(subDatas);
+                        });
+                        return p;
+                    })];
+            case 3:
+                temp = _d.sent();
+                console.log("concurrent1", temp); // [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]]
+                promises = [];
+                generator = concurrent2(2);
+                return [4 /*yield*/, splitBulk(LIMIT, arr, function (subDatas) {
+                        var p = function () {
+                            return new Promise(function (resolve) {
+                                resolve(subDatas);
+                            });
+                        };
+                        promises.push(generator(p));
+                    })];
+            case 4:
+                _d.sent();
+                return [4 /*yield*/, Promise.all(promises)];
+            case 5:
+                temp1 = _d.sent();
+                console.log("concurrent2", temp1); // [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]]
                 return [2 /*return*/];
         }
     });
