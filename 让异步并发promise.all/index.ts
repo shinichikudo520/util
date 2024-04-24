@@ -127,10 +127,36 @@
       }
     };
 
-    const generator = (fn, ...args) =>
-      new Promise((resolve) => enqueue(fn, resolve, ...args));
+    const generator = (fn, ...args) => {
+      /** 必须将参数深拷贝, 否则并发时, 引用数据类型可能会受影响, 导致数据混乱 */
+      const _args = deepClone(args);
+      return new Promise((resolve) => enqueue(fn, resolve, ..._args));
+    };
 
     return generator;
+  }
+  function deepClone(obj: any) {
+    if (
+      typeof obj !== "object" ||
+      obj === null ||
+      obj instanceof Date ||
+      obj instanceof ArrayBuffer ||
+      obj instanceof FormData
+    ) {
+      return obj;
+    } else {
+      if (Array.isArray(obj)) {
+        return obj.map(deepClone);
+      } else {
+        let obj2 = {};
+        for (const key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            obj2[key] = deepClone(obj[key]);
+          }
+        }
+        return obj2;
+      }
+    }
   }
 
   // [test concurrent2]
