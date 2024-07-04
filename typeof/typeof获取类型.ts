@@ -20,11 +20,11 @@ const obj2 = {
   ONE: 1,
   TWO: 2,
 } as const;
-type ObjectToUnion<T> = T extends { value: infer V } ? V : never;
-
-type Test = ObjectToUnion<
-  { key1: { value: 1 } } | { key2: { value: 2 } } | { key3: { value: 3 } }
->;
+declare type ObjectToUnion2<T> = T extends object ? T[keyof T] : never;
+type Test = ObjectToUnion2<typeof obj2>;
+// Test 将会是 0 | 1 | 2
+declare type ObjectToUnion1<T> = T extends { value: infer V } ? V : never;
+type Test1 = ObjectToUnion1<{ value: 1 } | { value: 2 } | { value: 3 }>;
 // Test 将会是 1 | 2 | 3
 
 function method() {
