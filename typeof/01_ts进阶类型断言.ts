@@ -288,9 +288,34 @@ declare type StringToUnion<
 
 type StringToUnion1 = StringToUnion<"abcde">; //  "a" | "b" | "c" | "d" | "e"
 
+/** 四、 as const
+ *    是一个修饰符, 用来修改类型推断的行为
+ *    如果用在一个变量或者表达式的类型上, 会强制将变量或者表达式变成不可变的
+ */
+
+/** 1. 使用 */
+const obj11 = {
+  id: 1,
+  age: 1,
+};
+obj11.age = 11;
+
+const obj12 = {
+  id: 2,
+  age: 2,
+} as const;
+// obj12.age = 12; // 会报错, as const 会将 obj12 属性都变为只读
+
+/** 2. 特性: 不可变量的类型不能被扩展, 反而被缩小到最精准的类型  */
+let num = 1;
+type num1 = typeof num; // number
+let num2 = 1 as const;
+type num3 = typeof num2; // 1
+
 /**
  * 参考资料
  * 1. keyof: https://www.jianshu.com/p/097936fae5be
  * 2. 条件类型: https://www.jianshu.com/p/c2d5efa1f2cc
  * 3. infer: https://www.jianshu.com/p/707a304d7752
+ * 4. as const: https://blog.csdn.net/hhbbeijing/article/details/132449249
  */

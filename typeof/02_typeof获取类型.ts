@@ -6,14 +6,15 @@ const obj: { aaa: string; bbb: number; ccc: Array<any>; ddd: Function } = {
 };
 // 获取对象 key 的类型
 type typeKey = keyof typeof obj; // typeKey: 'aaa' | 'bbb' | 'ccc' | 'ddd'
-// 获取对象 Value 的类型
+// 获取对象 Value 的类型, (typeof obj) 不是必须的
 type typeVal = (typeof obj)[keyof typeof obj]; // typeVal: string | number | Array<any> | Function
 // 获取对象的值作为类型
 const obj1 = {
   LINE: "line",
   ARC: "arc",
 } as const;
-type typeVal1 = (typeof obj1)[keyof typeof obj1]; // "line" | "arc"
+type typeKey1 = keyof typeof obj1; // "LINE" | "ARC"
+type typeVal1 = (typeof obj1)[keyof typeof obj1]; //  "line" | "arc"
 
 const obj2 = {
   ZORE: 0,
