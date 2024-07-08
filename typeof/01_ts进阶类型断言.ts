@@ -153,8 +153,8 @@ type A5 = IsString1<string | number>; // "Not a stirng " | "Is a string"
 declare type MyEqual<X, Y> = (<T>() => T extends X ? 1 : 2) extends <
   T
 >() => T extends Y ? 1 : 2
-  ? true
-  : false;
+  ? X
+  : never;
 
 /**
  * 格式化之后不好阅读, 标注好阅读的写法
@@ -178,20 +178,20 @@ type infer3 = InferArray<number[]>; // number
 declare type InferFirst<T extends unknown[]> = T extends [infer P, ...infer _]
   ? P
   : never;
-type First = InferFirst<[1, 2, 3]>; // 1
+type First1 = InferFirst<[1, 2, 3]>; // 1
 /** 推断数组最后一个元素的类型 */
 declare type InferLast<T extends unknown[]> = T extends [...infer _, infer P]
   ? P
   : never;
-type Last = InferLast<[1, 2, 3]>; // 3
+type Last1 = InferLast<[1, 2, 3]>; // 3
 /** 推断函数类型的参数的类型 */
 declare type InferArguments<T extends Function> = T extends (
   ...args: infer P
 ) => any
   ? P
   : never;
-type Arguments = InferArguments<(arg1: string, arg2: number) => void>; // [string, number]
-const args: Arguments = ["1", 1];
+type Arguments1 = InferArguments<(arg1: string, arg2: number) => void>; // [string, number]
+const args: Arguments1 = ["1", 1];
 /** 推断函数类型的返回值的类型 */
 declare type InferReturn<T extends Function> = T extends (
   ...args: any
@@ -219,7 +219,7 @@ type Shift = InferShift<[1, 2, 3]>; // [2, 3]
 declare type InferPop<T> = T extends [...infer P, infer _] ? [...P] : never;
 type Pop = InferPop<[1, 2, 3]>; // [1, 2 ]
 /** 推断是否是空数组 */
-declare type IsEmptyArray<T> = [] extends T ? true : false;
+declare type IsEmptyArray1<T> = [] extends T ? true : false;
 type aaa = IsEmptyArray<[]>; // true
 type bbb = IsEmptyArray<[1, 2, 3]>; // false
 /** 把 T 数组反转再与 U 数组拼接 */
@@ -245,7 +245,7 @@ type FlipArguments1 = FlipArguments<(a: 1, b: 2, c: 3) => boolean>; //  (arg_0: 
 const func3: FlipArguments1 = (a: 3, b: 2, c: 1) => true;
 
 /** 推断字符串是否以某字符串开头  */
-declare type StartsWith<
+declare type StartsWith1<
   T extends string,
   U extends string
 > = T extends `${U}${infer _}` ? T : never;
@@ -253,23 +253,24 @@ type IsAStart<T extends string> = T extends StartsWith<T, "A"> ? true : false;
 type IsAStart1 = IsAStart<"Ansjknkds">;
 
 /** 是否是空字符串 */
-type IsEmptyString<T extends string> = T extends `${infer L}${infer R}`
+type IsEmptyString1<T extends string> = T extends `${infer L}${infer R}`
   ? false
   : true;
-type IsEmptyString1 = IsEmptyString<"">;
-type IsEmptyString2 = IsEmptyString<"a">;
+type IsEmptyString11 = IsEmptyString<"">;
+type IsEmptyString12 = IsEmptyString<"a">;
 
 type Empty = " " | "\n" | "\r" | "\t";
 /** 去除左边空格 */
-declare type TrimLeft<T extends string> = T extends `${infer L}${infer R}`
+declare type TrimLeft1<T extends string> = T extends `${infer L}${infer R}`
   ? L extends Empty
     ? TrimLeft<R>
     : T
   : "";
-const sss: TrimLeft<"   ssss    "> = "ssss    ";
+type AAA = TrimLeft<"   ssss    ">;
+const sss: AAA = "ssss    ";
 
 /** 去除两边空格 */
-declare type Trim<T extends string> = T extends `${Empty}${infer R}`
+declare type Trim1<T extends string> = T extends `${Empty}${infer R}`
   ? Trim<R>
   : T extends `${infer L}${Empty}`
   ? Trim<L>
@@ -277,7 +278,7 @@ declare type Trim<T extends string> = T extends `${Empty}${infer R}`
 const jjjjj: Trim<"   ssss    "> = "ssss";
 
 /** 分割字符串的每一个字符作为类型 */
-declare type StringToUnion<
+declare type StringToUnion1<
   T extends string,
   U = never
 > = T extends IsEmptyString<T>
@@ -286,7 +287,7 @@ declare type StringToUnion<
   ? StringToUnion<R, L | U>
   : U;
 
-type StringToUnion1 = StringToUnion<"abcde">; //  "a" | "b" | "c" | "d" | "e"
+type StringToUnion11 = StringToUnion<"abcde">; //  "a" | "b" | "c" | "d" | "e"
 
 /** 四、 as const
  *    是一个修饰符, 用来修改类型推断的行为
