@@ -241,9 +241,9 @@ declare type TrimRight<T extends string> = T extends `${infer L}${infer R}`
   : "";
 
 /** 去除两边空格 */
-declare type Trim<T extends string> = T extends `${Empty}${infer R}`
+declare type Trim<T extends string> = T extends `${BlankSpace}${infer R}`
   ? Trim<R>
-  : T extends `${infer L}${Empty}`
+  : T extends `${infer L}${BlankSpace}`
   ? Trim<L>
   : T;
 
