@@ -157,10 +157,12 @@ declare type Find<
 declare type ArrayToEnum<
   T extends unknown[],
   B extends boolean = false
-> = T extends (infer I extends string | number | symbol)[]
-  ? {
-      [key in I]: I extends key ? (B extends true ? Find<T, I> : I) : never;
-    }
+> = T extends (infer I)[]
+  ? I extends string | number | symbol
+    ? {
+        [key in I]: I extends key ? (B extends true ? Find<T, I> : I) : never;
+      }
+    : never
   : never;
 
 /** 判断 X Y 是否相等, 相等则返回 A , 反之返回 B */
