@@ -220,8 +220,8 @@ declare type InferPop<T> = T extends [...infer P, infer _] ? [...P] : never;
 type Pop = InferPop<[1, 2, 3]>; // [1, 2 ]
 /** 推断是否是空数组 */
 declare type IsEmptyArray1<T> = [] extends T ? true : false;
-type aaa = IsEmptyArray<[]>; // true
-type bbb = IsEmptyArray<[1, 2, 3]>; // false
+type aaa = IsEmptyArray1<[]>; // true
+type bbb = IsEmptyArray1<[1, 2, 3]>; // false
 /** 把 T 数组反转再与 U 数组拼接 */
 declare type InferReverse<
   T extends unknown[],
@@ -249,45 +249,45 @@ declare type StartsWith1<
   T extends string,
   U extends string
 > = T extends `${U}${infer _}` ? T : never;
-type IsAStart<T extends string> = T extends StartsWith<T, "A"> ? true : false;
+type IsAStart<T extends string> = T extends StartsWith1<T, "A"> ? true : false;
 type IsAStart1 = IsAStart<"Ansjknkds">;
 
 /** 是否是空字符串 */
 type IsEmptyString1<T extends string> = T extends `${infer L}${infer R}`
   ? false
   : true;
-type IsEmptyString11 = IsEmptyString<"">;
-type IsEmptyString12 = IsEmptyString<"a">;
+type IsEmptyString11 = IsEmptyString1<"">;
+type IsEmptyString12 = IsEmptyString1<"a">;
 
 type Empty = " " | "\n" | "\r" | "\t";
 /** 去除左边空格 */
 declare type TrimLeft1<T extends string> = T extends `${infer L}${infer R}`
   ? L extends Empty
-    ? TrimLeft<R>
+    ? TrimLeft1<R>
     : T
   : "";
-type AAA = TrimLeft<"   ssss    ">;
+type AAA = TrimLeft1<"   ssss    ">;
 const sss: AAA = "ssss    ";
 
 /** 去除两边空格 */
 declare type Trim1<T extends string> = T extends `${Empty}${infer R}`
-  ? Trim<R>
+  ? Trim1<R>
   : T extends `${infer L}${Empty}`
-  ? Trim<L>
+  ? Trim1<L>
   : T;
-const jjjjj: Trim<"   ssss    "> = "ssss";
+const jjjjj: Trim1<"   ssss    "> = "ssss";
 
 /** 分割字符串的每一个字符作为类型 */
 declare type StringToUnion1<
   T extends string,
   U = never
-> = T extends IsEmptyString<T>
+> = T extends IsEmptyString1<T>
   ? U
   : T extends `${infer L}${infer R}`
-  ? StringToUnion<R, L | U>
+  ? StringToUnion1<R, L | U>
   : U;
 
-type StringToUnion11 = StringToUnion<"abcde">; //  "a" | "b" | "c" | "d" | "e"
+type StringToUnion11 = StringToUnion1<"abcde">; //  "a" | "b" | "c" | "d" | "e"
 
 /** 四、 as const
  *    是一个修饰符, 用来修改类型推断的行为
