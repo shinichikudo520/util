@@ -196,7 +196,7 @@ declare type OmitReadonlyKey<T extends object> = Omit<T, ReadonlyKeys<T>>;
  * 功能与 Pick 一致, 只读取指定的属性
  * 功能与 Omit 相反, 去除指定的属性
  */
-declare type As<T, K> = {
+declare type As<T, K extends keyof T> = {
   [P in keyof T as P extends K ? P : never]: T[P];
 };
 
