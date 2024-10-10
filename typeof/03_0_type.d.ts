@@ -206,6 +206,12 @@ declare type PickReadonly<T, K extends keyof T> = Merge<
   Writable<Omit<T, K>>
 >;
 
+/** 指定必要属性 */
+declare type PickRequired<T extends object, K extends keyof T> = Merge<
+  Required<Pick<T, K>>,
+  T
+>;
+
 /** 添加属性值 */
 declare type Append<T, K extends keyof any, V> = {
   [P in keyof T | K]: P extends keyof T ? T[P] : V;
