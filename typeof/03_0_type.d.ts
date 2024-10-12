@@ -208,8 +208,8 @@ declare type PickReadonly<T, K extends keyof T> = Merge<
 
 /** 指定必要属性 */
 declare type PickRequired<T extends object, K extends keyof T> = Merge<
-  Required<Pick<T, K>>,
-  T
+  T,
+  Required<Pick<T, K>>
 >;
 
 /** 添加属性值 */
