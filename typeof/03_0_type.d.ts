@@ -165,6 +165,11 @@ declare type ArrayToEnum<
     : never
   : never;
 
+/** 将集合转化成数组 */
+declare type SetToArray<T extends Set<unknown>> = T extends Set<infer I>
+  ? I[]
+  : never;
+
 /** 判断 X Y 是否相等, 相等则返回 A , 反之返回 B */
 declare type IsEqual<X, Y, A = X, B = never> = (<T>() => T extends X
   ? 1
