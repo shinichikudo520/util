@@ -217,6 +217,12 @@ declare type PickRequired<T extends object, K extends keyof T> = Merge<
   Required<Pick<T, K>>
 >;
 
+/** 指定可选属性 */
+declare type PickPartial<T extends object, K extends keyof T> = Merge<
+  T,
+  Partial<Pick<T, K>>
+>;
+
 /** 添加属性值 */
 declare type Append<T, K extends keyof any, V> = {
   [P in keyof T | K]: P extends keyof T ? T[P] : V;
