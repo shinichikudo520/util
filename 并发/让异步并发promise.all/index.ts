@@ -172,4 +172,36 @@
   const temp1 = await Promise.all(promises);
   console.log("concurrent2", temp1); // [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]]
   //  ------------------ COMPLETE
+
+  /**
+   * 并发: 可以补位(继续封装)
+   *  按照指定 limit 数量并发处理异步, 当某一个完成, 则下一个异步进入, 直到异步并发数量 == limit
+   * @param limit 指定每次最大并发数量
+   * @param callback 需要并发的异步函数
+   * @param limit 并发函数需要的参数
+   * @returns
+   */
+  async function concurrent3(
+    limit: number,
+    callback: (...arg) => void | Promise<any>,
+    args: any[]
+  ) {
+    const generator = concurrent2(limit);
+    const tasks: Promise<any>[] = [];
+
+    for (const arg of args) {
+      const _arg = Array.isArray(arg) ? arg : [arg];
+      tasks.push(generator(callback, ..._arg));
+    }
+
+    return await Promise.all(tasks);
+  }
+
+  // [test concurrent3]
+  const p = async (num) => {
+    return num;
+  };
+  const temp2 = await concurrent3(2, p, arr);
+  console.log("concurrent3", temp2); // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+  //  ------------------ COMPLETE
 })();

@@ -103,6 +103,17 @@ var _this = this;
             });
         });
     }
+    /**
+     * 并发: 没有补位功能
+     *  与 concurrent 相比, 其实就是将分割函数封装起来了, 可以由外部传入指定的分割函数
+     *  将数据使用传入的分割函数 split 进行分割后, 调用回调 callback 返回一个 promise
+     *  tasks 接收所有 promise, 并发处理, 等待所有 promise 完成后返回
+     * @param limits 分割限制
+     * @param datas 数据
+     * @param split 分割函数
+     * @param callback 针对分割后的数据进行处理的函数, 需要返回一个 promise
+     * @returns
+     */
     function concurrent1(limits, datas, split, callback) {
         return __awaiter(this, void 0, void 0, function () {
             var tasks, result;
@@ -124,6 +135,12 @@ var _this = this;
             });
         });
     }
+    /**
+     * 并发: 可以补位
+     *  按照指定 limit 数量并发处理异步, 当某一个完成, 则下一个异步进入, 直到异步并发数量 == limit
+     * @param limit 指定每次最大并发数量
+     * @returns
+     */
     function concurrent2(limit) {
         var _this = this;
         var queue = [];
@@ -182,20 +199,74 @@ var _this = this;
             for (var _i = 1; _i < arguments.length; _i++) {
                 args[_i - 1] = arguments[_i];
             }
-            return new Promise(function (resolve) { return enqueue.apply(void 0, __spreadArray([fn, resolve], args, false)); });
+            /** 必须将参数深拷贝, 否则并发时, 引用数据类型可能会受影响, 导致数据混乱 */
+            var _args = deepClone(args);
+            return new Promise(function (resolve) { return enqueue.apply(void 0, __spreadArray([fn, resolve], _args, false)); });
         };
         return generator;
     }
-    var tasks, _loop_1, i, result, arr, LIMIT, _a, _b, _c, temp, promises, generator, temp1;
+    function deepClone(obj) {
+        if (typeof obj !== "object" ||
+            obj === null ||
+            obj instanceof Date ||
+            obj instanceof ArrayBuffer ||
+            obj instanceof FormData) {
+            return obj;
+        }
+        else {
+            if (Array.isArray(obj)) {
+                return obj.map(deepClone);
+            }
+            else {
+                var obj2 = {};
+                for (var key in obj) {
+                    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                        obj2[key] = deepClone(obj[key]);
+                    }
+                }
+                return obj2;
+            }
+        }
+    }
+    //  ------------------ COMPLETE
+    /**
+     * 并发: 可以补位(继续封装)
+     *  按照指定 limit 数量并发处理异步, 当某一个完成, 则下一个异步进入, 直到异步并发数量 == limit
+     * @param limit 指定每次最大并发数量
+     * @param callback 需要并发的异步函数
+     * @param limit 并发函数需要的参数
+     * @returns
+     */
+    function concurrent3(limit, callback, args) {
+        return __awaiter(this, void 0, void 0, function () {
+            var generator, tasks, _i, args_1, arg, _arg;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        generator = concurrent2(limit);
+                        tasks = [];
+                        for (_i = 0, args_1 = args; _i < args_1.length; _i++) {
+                            arg = args_1[_i];
+                            _arg = Array.isArray(arg) ? arg : [arg];
+                            tasks.push(generator.apply(void 0, __spreadArray([callback], _arg, false)));
+                        }
+                        return [4 /*yield*/, Promise.all(tasks)];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    }
+    var tasks, _loop_1, i, result, arr, LIMIT, _a, _b, _c, temp, promises, generator, temp1, p, temp2;
+    var _this = this;
     return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
                 tasks = [];
                 _loop_1 = function (i) {
-                    var p = new Promise(function (resolve) {
+                    var p_1 = new Promise(function (resolve) {
                         resolve(i);
                     });
-                    tasks.push(p);
+                    tasks.push(p_1);
                 };
                 for (i = 0; i < 10; i++) {
                     _loop_1(i);
@@ -240,6 +311,15 @@ var _this = this;
             case 5:
                 temp1 = _d.sent();
                 console.log("concurrent2", temp1); // [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]]
+                p = function (num) { return __awaiter(_this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        return [2 /*return*/, num];
+                    });
+                }); };
+                return [4 /*yield*/, concurrent3(2, p, arr)];
+            case 6:
+                temp2 = _d.sent();
+                console.log("concurrent3", temp2); // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
                 return [2 /*return*/];
         }
     });
