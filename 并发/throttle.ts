@@ -8,25 +8,30 @@
  */
 export default function throttle<K, T>(
   func: (...args: K[]) => T,
-  delay: number
+  delay: number,
+  immediately = false
 ) {
-  let lastTime = 0;
   let timerId: NodeJS.Timeout;
+  let lastPromise: any = null;
 
   return function (...args: K[]): ReturnType<typeof func> {
-    const currentTime = new Date().getTime();
-    if (currentTime - lastTime >= delay) {
+    if (immediately) {
       // 达到执行间隔
       clearTimeout(timerId);
-      lastTime = currentTime;
+      lastPromise && lastPromise();
+      immediately = false;
       return func.apply(this, args);
     } else {
       // 执行间隔内触发, 保证最后一次的执行
       clearTimeout(timerId);
-      timerId = setTimeout(() => {
-        lastTime = currentTime;
-        return func.apply(this, ...args);
-      }, delay);
+      lastPromise && lastPromise();
+      return new Promise((resolve) => {
+        lastPromise = resolve;
+        timerId = setTimeout(async () => {
+          const res = await func.apply(this, args);
+          resolve(res);
+        }, delay);
+      });
     }
   };
 }
