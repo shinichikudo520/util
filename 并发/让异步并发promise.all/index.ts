@@ -204,4 +204,55 @@
   const temp2 = await concurrent3(2, p, arr);
   console.log("concurrent3", temp2); // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
   //  ------------------ COMPLETE
+
+  /**
+   * 并发: 可以补位(继续封装)
+   *  按照指定 limit 数量并发处理异步, 当某一个完成, 则下一个异步进入, 直到异步并发数量 == limit
+   * @param limit 指定每次最大并发数量
+   * @param c 需要实例化的类
+   * @param f 类的函数
+   * @param args1 类构造函数需要的参数
+   * @param f 类的函数需要的参数, 如果村长, 长度必须与 args1 长度相等, 否则参数无效
+   * @returns
+   */
+  async function concurrent4<T>(
+    limit: number,
+    c: new (...args: any[]) => T,
+    f: string,
+    args1?: any[],
+    args2?: any[]
+  ) {
+    const generator = concurrent2(limit);
+    const tasks: Promise<any>[] = [];
+
+    if (args1) {
+      for (let i = 0; i < args1.length; i++) {
+        const arg1 = args1[i];
+        const _arg1 = Array.isArray(arg1) ? arg1 : [arg1];
+        const instance = new c(..._arg1);
+        const callback = instance[f].bind(instance);
+
+        if (args2 && args2.length === args1.length) {
+          const arg2 = args2[i];
+          const _arg2 = Array.isArray(arg2) ? arg2 : [arg2];
+          tasks.push(generator(callback, ..._arg2));
+        } else {
+          tasks.push(generator(callback));
+        }
+      }
+    } else {
+      const instance = new c();
+      const callback = instance[f].bind(instance);
+      if (args2) {
+        for (const arg2 of args2) {
+          const _arg2 = Array.isArray(arg2) ? arg2 : [arg2];
+          tasks.push(generator(callback, ..._arg2));
+        }
+      } else {
+        tasks.push(generator(callback));
+      }
+    }
+
+    return Promise.all(tasks);
+  }
 })();
